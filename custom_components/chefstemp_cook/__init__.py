@@ -100,11 +100,19 @@ def _async_register_services(hass: HomeAssistant) -> None:
     async def _mark(call: ServiceCall) -> None:
         mgr = _manager_for(hass, call)
         if mgr:
-            await mgr.async_mark(
-                call.data.get("event", "custom"),
-                call.data.get("label"),
-                call.data.get("color"),
-            )
+            await mgr.async_mark(call.data.get("event", "custom"),
+                                 call.data.get("label"), call.data.get("color"))
+
+    async def _edit_event(call: ServiceCall) -> None:
+        mgr = _manager_for(hass, call)
+        if mgr:
+            await mgr.async_edit_event(call.data["id"], call.data.get("timestamp"),
+                                       call.data.get("label"), call.data.get("color"))
+
+    async def _delete_event(call: ServiceCall) -> None:
+        mgr = _manager_for(hass, call)
+        if mgr:
+            await mgr.async_delete_event(call.data["id"])
 
     async def _reset(call: ServiceCall) -> None:
         mgr = _manager_for(hass, call)
@@ -116,27 +124,59 @@ def _async_register_services(hass: HomeAssistant) -> None:
         if mgr:
             await mgr.async_set_target(call.data.get("target"))
 
-    hass.services.async_register(
-        DOMAIN, "mark_event", _mark,
-        schema=vol.Schema(
-            {
-                vol.Optional("event", default="custom"): cv.string,
-                vol.Optional("label"): cv.string,
-                vol.Optional("color"): cv.string,
-                vol.Optional("entry_id"): cv.string,
-            }
-        ),
-    )
-    hass.services.async_register(
-        DOMAIN, "reset", _reset,
-        schema=vol.Schema({vol.Optional("entry_id"): cv.string}),
-    )
-    hass.services.async_register(
-        DOMAIN, "set_target", _set_target,
-        schema=vol.Schema(
-            {
-                vol.Required("target"): vol.Coerce(float),
-                vol.Optional("entry_id"): cv.string,
-            }
-        ),
-    )
+    async def _set_grill_target(call: ServiceCall) -> None:
+        mgr = _manager_for(hass, call)
+        if mgr:
+            await mgr.async_set_grill_target(call.data.get("target"), call.data.get("band"))
+
+    async def _add_probe(call: ServiceCall) -> None:
+        mgr = _manager_for(hass, call)
+        if mgr:
+            await mgr.async_add_probe(call.data.get("name", ""),
+                                      call.data.get("readings", []),
+                                      call.data.get("item", "custom"),
+                                      call.data.get("target"))
+
+    async def _update_probe(call: ServiceCall) -> None:
+        mgr = _manager_for(hass, call)
+        if mgr:
+            await mgr.async_update_probe(
+                call.data["id"],
+                name=call.data.get("name"), item=call.data.get("item"),
+                target=call.data.get("target"), readings=call.data.get("readings"),
+            )
+
+    async def _remove_probe(call: ServiceCall) -> None:
+        mgr = _manager_for(hass, call)
+        if mgr:
+            await mgr.async_remove_probe(call.data["id"])
+
+    reg = hass.services.async_register
+    reg(DOMAIN, "mark_event", _mark, schema=vol.Schema({
+        vol.Optional("event", default="custom"): cv.string,
+        vol.Optional("label"): cv.string, vol.Optional("color"): cv.string,
+        vol.Optional("entry_id"): cv.string}))
+    reg(DOMAIN, "edit_event", _edit_event, schema=vol.Schema({
+        vol.Required("id"): cv.string, vol.Optional("timestamp"): vol.Coerce(float),
+        vol.Optional("label"): cv.string, vol.Optional("color"): cv.string,
+        vol.Optional("entry_id"): cv.string}))
+    reg(DOMAIN, "delete_event", _delete_event, schema=vol.Schema({
+        vol.Required("id"): cv.string, vol.Optional("entry_id"): cv.string}))
+    reg(DOMAIN, "reset", _reset, schema=vol.Schema({vol.Optional("entry_id"): cv.string}))
+    reg(DOMAIN, "set_target", _set_target, schema=vol.Schema({
+        vol.Required("target"): vol.Coerce(float), vol.Optional("entry_id"): cv.string}))
+    reg(DOMAIN, "set_grill_target", _set_grill_target, schema=vol.Schema({
+        vol.Optional("target"): vol.Any(None, vol.Coerce(float)),
+        vol.Optional("band"): vol.Coerce(float), vol.Optional("entry_id"): cv.string}))
+    reg(DOMAIN, "add_probe", _add_probe, schema=vol.Schema({
+        vol.Optional("name"): cv.string,
+        vol.Optional("readings", default=[]): vol.All(cv.ensure_list, [cv.string]),
+        vol.Optional("item", default="custom"): cv.string,
+        vol.Optional("target"): vol.Coerce(float), vol.Optional("entry_id"): cv.string}))
+    reg(DOMAIN, "update_probe", _update_probe, schema=vol.Schema({
+        vol.Required("id"): cv.string, vol.Optional("name"): cv.string,
+        vol.Optional("item"): cv.string, vol.Optional("target"): vol.Any(None, vol.Coerce(float)),
+        vol.Optional("readings"): vol.All(cv.ensure_list, [cv.string]),
+        vol.Optional("entry_id"): cv.string}))
+    reg(DOMAIN, "remove_probe", _remove_probe, schema=vol.Schema({
+        vol.Required("id"): cv.string, vol.Optional("entry_id"): cv.string}))

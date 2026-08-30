@@ -21,16 +21,25 @@ ESPHome build, or any other thermometer.
 
 ## What you get
 
-- **Sidebar app** with live grill/food temps, elapsed time, and current stage.
-- **One-tap actions** (Meat On starts a fresh cook) and a **note box** for custom
-  labels like "spritzed" or "added wood".
-- **Heat chart** drawn inline (no extra cards/plugins) showing grill + food lines,
-  a dashed pull-target line, and a vertical marker at every event.
-- **Pull-temp alert**: fires the `chefstemp_cook_target_reached` event and a
-  persistent notification when the food probe crosses the target. Automate a
-  phone notification off that event if you want it on your phone.
-- **Entities** for automations/voice: buttons (Meat On/Wrapped/Sauce/Done/Reset)
-  and `sensor.cook_stage` / `sensor.cook_elapsed`.
+- **Sidebar app** with live grill + per-probe temps, elapsed time, and stage.
+- **One-tap actions** — Meat On (starts a fresh cook), Wrapped, Sauce, Flip, Done
+  — plus a **note box** for custom labels like "spritzed" or "added wood".
+- **Multiple probes**, each with its own **name**, **item type** (steak, pizza,
+  brisket, …), **pull target**, and **one or more reading sensors** (so a probe
+  that exposes several sensors can chart them all).
+- **Two kinds of target**:
+  - **Grill target** with a ± band — alerts if the grill *drifts* out of range
+    (fires `chefstemp_cook_grill_drift`). Presets: Low & slow / Roasting / Sear.
+  - **Per-probe meat target** — alerts when that probe crosses it
+    (fires `chefstemp_cook_target_reached`). Item presets prefill sensible targets.
+- **Editable cook log** — tap *edit* on any logged action to fix its **time** or
+  label after the fact (for when you couldn't get to your phone right away).
+- **Heat chart** drawn inline (no extra cards/plugins): grill + every probe
+  reading, dashed target lines, and a labelled marker at each event.
+- **Entities & services** for automations/voice: action buttons,
+  `sensor.cook_stage` / `sensor.cook_elapsed`, and services
+  `mark_event`, `edit_event`, `delete_event`, `set_grill_target`,
+  `add_probe`, `update_probe`, `remove_probe`, `reset`.
 
 ## Services
 
