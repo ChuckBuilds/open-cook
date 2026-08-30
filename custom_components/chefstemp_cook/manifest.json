@@ -1,0 +1,12 @@
+{
+  "domain": "chefstemp_cook",
+  "name": "ChefsTemp Cook",
+  "codeowners": ["@ChuckBuilds"],
+  "config_flow": true,
+  "dependencies": ["http", "frontend", "websocket_api", "recorder"],
+  "documentation": "https://github.com/ChuckBuilds/chefstemp-cook",
+  "integration_type": "service",
+  "iot_class": "calculated",
+  "issue_tracker": "https://github.com/ChuckBuilds/chefstemp-cook/issues",
+  "version": "1.0.0"
+}

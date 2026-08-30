@@ -1,0 +1,27 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "ChefsTemp Cook",
+        "description": "Pick the temperature sensors to chart. The grill sensor is required; the food sensor drives the pull-temp alert.",
+        "data": {
+          "grill_entity": "Grill / ambient temperature sensor",
+          "food_entity": "Food probe temperature sensor",
+          "target_temp": "Default pull target"
+        }
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "ChefsTemp Cook",
+        "data": {
+          "grill_entity": "Grill / ambient temperature sensor",
+          "food_entity": "Food probe temperature sensor",
+          "target_temp": "Default pull target"
+        }
+      }
+    }
+  }
+}

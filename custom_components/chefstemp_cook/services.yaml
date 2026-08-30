@@ -1,0 +1,41 @@
+mark_event:
+  name: Mark event
+  description: Record a cook event (shown as a marker on the heat chart).
+  fields:
+    event:
+      name: Event key
+      description: One of meat_on, wrapped, sauce, done, or custom.
+      example: wrapped
+      default: custom
+      selector:
+        text:
+    label:
+      name: Label
+      description: Free-text label for a custom note.
+      example: Spritzed
+      selector:
+        text:
+    color:
+      name: Color
+      description: Optional hex color for the marker.
+      example: "#9e9e9e"
+      selector:
+        text:
+
+reset:
+  name: Reset cook
+  description: Clear the current cook's events and timers.
+
+set_target:
+  name: Set pull target
+  description: Set the food-probe target temperature for the alert.
+  fields:
+    target:
+      name: Target
+      description: Target temperature in the same unit your entities report.
+      example: 95
+      selector:
+        number:
+          min: 0
+          max: 600
+          mode: box
