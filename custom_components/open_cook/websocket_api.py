@@ -38,7 +38,7 @@ def async_register(hass: HomeAssistant) -> None:
 
 @websocket_api.websocket_command(
     {
-        vol.Required("type"): "chefstemp_cook/get",
+        vol.Required("type"): "open_cook/get",
         vol.Optional("entry_id"): str,
     }
 )
@@ -47,14 +47,14 @@ def ws_get(hass: HomeAssistant, connection: websocket_api.ActiveConnection,
            msg: dict[str, Any]) -> None:
     mgr = _pick(hass, msg.get("entry_id"))
     if mgr is None:
-        connection.send_error(msg["id"], "not_found", "No ChefsTemp Cook configured")
+        connection.send_error(msg["id"], "not_found", "No Open Cook configured")
         return
     connection.send_result(msg["id"], mgr.as_dict())
 
 
 @websocket_api.websocket_command(
     {
-        vol.Required("type"): "chefstemp_cook/subscribe",
+        vol.Required("type"): "open_cook/subscribe",
         vol.Optional("entry_id"): str,
     }
 )
@@ -63,7 +63,7 @@ def ws_subscribe(hass: HomeAssistant, connection: websocket_api.ActiveConnection
                  msg: dict[str, Any]) -> None:
     mgr = _pick(hass, msg.get("entry_id"))
     if mgr is None:
-        connection.send_error(msg["id"], "not_found", "No ChefsTemp Cook configured")
+        connection.send_error(msg["id"], "not_found", "No Open Cook configured")
         return
 
     @callback

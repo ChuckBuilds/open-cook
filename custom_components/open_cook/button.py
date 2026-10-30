@@ -27,8 +27,8 @@ class CookResetButton(ButtonEntity):
         self._attr_unique_id = f"{entry.entry_id}_reset"
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, entry.entry_id)},
-            name="ChefsTemp Cook",
-            manufacturer="ChefsTemp Cook",
+            name="Open Cook",
+            manufacturer="Open Cook",
         )
 
     async def async_press(self) -> None:

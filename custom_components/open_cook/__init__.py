@@ -1,4 +1,4 @@
-"""ChefsTemp Cook — a cook-timeline app panel for Home Assistant.
+"""Open Cook — a cook-timeline app panel for Home Assistant.
 
 Registers a sidebar panel ("Cook") with big action buttons and a heat chart that
 overlays your cook events (meat on, wrapped, sauce, custom notes). Backed by a
@@ -63,7 +63,7 @@ async def _async_update_listener(hass: HomeAssistant, entry: ConfigEntry) -> Non
 
 
 async def _async_register_panel(hass: HomeAssistant) -> None:
-    js_path = os.path.join(os.path.dirname(__file__), "chefstemp-cook-panel.js")
+    js_path = os.path.join(os.path.dirname(__file__), "open-cook-panel.js")
     await hass.http.async_register_static_paths(
         [StaticPathConfig(STATIC_URL, js_path, False)]
     )

@@ -1,6 +1,6 @@
-"""Constants for ChefsTemp Cook."""
+"""Constants for Open Cook."""
 
-DOMAIN = "chefstemp_cook"
+DOMAIN = "open_cook"
 
 # Config entry
 CONF_GRILL_ENTITY = "grill_entity"
@@ -8,13 +8,13 @@ CONF_FOOD_ENTITY = "food_entity"     # optional: seeds the first probe
 CONF_TARGET = "target_temp"
 
 # Static asset serving + sidebar panel
-PANEL_URL_PATH = "chefstemp-cook"
+PANEL_URL_PATH = "open-cook"
 PANEL_TITLE = "Cook"
 PANEL_ICON = "mdi:grill"
-STATIC_URL = "/chefstemp_cook_static/chefstemp-cook-panel.js"
-PANEL_ELEMENT = "chefstemp-cook-panel"
+STATIC_URL = "/open_cook_static/open-cook-panel.js"
+PANEL_ELEMENT = "open-cook-panel"
 
-STORAGE_KEY = "chefstemp_cook.state"
+STORAGE_KEY = "open_cook.state"
 STORAGE_VERSION = 3
 
 # Per-item timeline actions shown as buttons on each probe card. "on" starts
@@ -59,5 +59,5 @@ GRILL_PRESETS = [
 DEFAULT_GRILL_BAND = 20.0
 
 # HA events fired for automations.
-EVENT_TARGET_REACHED = "chefstemp_cook_target_reached"        # a probe hit target
-EVENT_GRILL_DRIFT = "chefstemp_cook_grill_drift"              # grill left its band
+EVENT_TARGET_REACHED = "open_cook_target_reached"        # a probe hit target
+EVENT_GRILL_DRIFT = "open_cook_grill_drift"              # grill left its band

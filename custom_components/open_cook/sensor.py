@@ -21,8 +21,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry,
 def _device(entry: ConfigEntry) -> DeviceInfo:
     return DeviceInfo(
         identifiers={(DOMAIN, entry.entry_id)},
-        name="ChefsTemp Cook",
-        manufacturer="ChefsTemp Cook",
+        name="Open Cook",
+        manufacturer="Open Cook",
     )
 
 

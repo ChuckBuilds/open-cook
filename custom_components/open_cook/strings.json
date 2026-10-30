@@ -2,7 +2,7 @@
   "config": {
     "step": {
       "user": {
-        "title": "ChefsTemp Cook",
+        "title": "Open Cook",
         "description": "Pick the temperature sensors to chart. The grill sensor is required; the food sensor drives the pull-temp alert.",
         "data": {
           "grill_entity": "Grill / ambient temperature sensor",
@@ -15,7 +15,7 @@
   "options": {
     "step": {
       "init": {
-        "title": "ChefsTemp Cook",
+        "title": "Open Cook",
         "data": {
           "grill_entity": "Grill / ambient temperature sensor",
           "food_entity": "Food probe temperature sensor",

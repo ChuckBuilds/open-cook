@@ -1,5 +1,5 @@
 /*
- * ChefsTemp Cook — sidebar panel (v3).
+ * Open Cook — sidebar panel (v3).
  * Independent per-item cooks on a shared grill: each probe has its own On/Wrap/
  * Sauce/Flip/Done timeline, start clock, and target. Grill temp + target + notes
  * are shared. Self-drawn SVG heat chart (no external libs).
@@ -13,7 +13,7 @@ const toLocalInput = (ts) => {
 const fmtTime = (ts) => new Date(ts * 1000).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
 const esc = (s) => String(s == null ? "" : s).replace(/[<>&"]/g, (c) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", '"': "&quot;" }[c]));
 
-class ChefsTempCookPanel extends HTMLElement {
+class OpenCookPanel extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
@@ -33,9 +33,9 @@ class ChefsTempCookPanel extends HTMLElement {
     try {
       this._unsub = this._hass.connection.subscribeMessage(
         (msg) => { this._cook = msg; this._render(); },
-        { type: "chefstemp_cook/subscribe" });
+        { type: "open_cook/subscribe" });
     } catch (e) {
-      this.shadowRoot.getElementById("err").textContent = "Could not reach the ChefsTemp Cook integration.";
+      this.shadowRoot.getElementById("err").textContent = "Could not reach the Open Cook integration.";
     }
     await this._loadHistory(); this._render();
     this._timers.push(setInterval(() => this._loadHistory().then(() => this._renderChart()), 20000));
@@ -78,7 +78,7 @@ class ChefsTempCookPanel extends HTMLElement {
       .filter((id) => id.startsWith("sensor.") && this._hass.states[id].attributes.device_class === "temperature").sort();
   }
 
-  _svc(n, d) { this._hass.callService("chefstemp_cook", n, d || {}); }
+  _svc(n, d) { this._hass.callService("open_cook", n, d || {}); }
   _itemEvent(pid, ev) { this._svc("item_event", { probe_id: pid, event: ev }); }
   _resetItem(pid) { this._svc("reset_item", { probe_id: pid }); }
   _note(label) { this._svc("note", { label }); }
@@ -387,4 +387,4 @@ class ChefsTempCookPanel extends HTMLElement {
   }
 }
 
-customElements.define("chefstemp-cook-panel", ChefsTempCookPanel);
+customElements.define("open-cook-panel", OpenCookPanel);

@@ -1,0 +1,12 @@
+{
+  "domain": "open_cook",
+  "name": "Open Cook",
+  "codeowners": ["@ChuckBuilds"],
+  "config_flow": true,
+  "dependencies": ["http", "frontend", "websocket_api", "recorder"],
+  "documentation": "https://github.com/ChuckBuilds/open-cook",
+  "integration_type": "service",
+  "iot_class": "calculated",
+  "issue_tracker": "https://github.com/ChuckBuilds/open-cook/issues",
+  "version": "4.0.0"
+}

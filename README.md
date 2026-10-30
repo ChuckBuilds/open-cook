@@ -1,23 +1,31 @@
-# ChefsTemp Cook
+# Open Cook
 
-A cook-timeline **app** for Home Assistant. Adds a **Cook** page to the sidebar
-with big action buttons — Meat On, Wrapped, Sauce, Done, plus free-text notes —
-and a live **heat chart** that overlays every action as a labelled marker, so you
-can see exactly when you wrapped or spritzed against the temperature curve. Get a
-push alert when the food probe hits your pull temperature.
+A device-agnostic cook-timeline **app** for Home Assistant. Adds a **Cook** page
+to the sidebar where each probe is its own cook item with per-item action buttons
+(On / Wrap / Sauce / Flip / Done), and a live **heat chart** overlays every action
+as a labelled marker against the temperature curves. Get a push alert when a probe
+hits its pull temperature or the grill drifts out of its band.
 
-Works with any temperature sensors — pair it with the grill and food entities
-from the [chefstemp-s1-ha](https://github.com/ChuckBuilds/chefstemp-s1-ha)
-ESPHome build, or any other thermometer.
+**Works with any temperature sensors** — ChefsTemp (via the
+[chefstemp-s1-ha](https://github.com/ChuckBuilds/chefstemp-s1-ha) ESPHome build),
+ThermoPro (via `ha-thermopro-meat`), Govee, a plain ESPHome sensor — anything that
+exposes a `sensor` with `device_class: temperature`. Open Cook only consumes HA
+temperature entities; it has no dependency on any particular thermometer.
 
 ## Install (HACS custom repository)
 
 1. HACS → ⋮ → **Custom repositories** → add
-   `https://github.com/ChuckBuilds/chefstemp-cook`, category **Integration**.
-2. Install **ChefsTemp Cook**, then **restart Home Assistant**.
-3. Settings → Devices & Services → **Add Integration** → *ChefsTemp Cook* →
+   `https://github.com/ChuckBuilds/open-cook`, category **Integration**.
+2. Install **Open Cook**, then **restart Home Assistant**.
+3. Settings → Devices & Services → **Add Integration** → *Open Cook* →
    pick your **grill** and **food** temperature sensors and a default pull target.
 4. A **Cook** item appears in the sidebar. That's the app — no dashboard to build.
+
+> **Migrating from "ChefsTemp Cook" (v3 and earlier):** this release renamed the
+> integration to `open_cook` (a clean break so it's thermometer-agnostic). It does
+> not auto-upgrade in place. Remove the old *ChefsTemp Cook* integration and its
+> HACS entry first, then add this repo and set it up fresh. Your probe config is
+> re-entered once; in-progress cook state does not carry over.
 
 ## What you get
 
@@ -33,24 +41,25 @@ ESPHome build, or any other thermometer.
   that exposes several sensors can chart them all).
 - **Two kinds of target**:
   - **Grill target** with a ± band — alerts if the grill *drifts* out of range
-    (fires `chefstemp_cook_grill_drift`). Presets: Low & slow / Roasting / Sear.
+    (fires `open_cook_grill_drift`). Presets: Low & slow / Roasting / Sear.
   - **Per-probe meat target** — alerts when that probe crosses it
-    (fires `chefstemp_cook_target_reached`). Item presets prefill sensible targets.
+    (fires `open_cook_target_reached`). Item presets prefill sensible targets.
 - **Editable cook log** — tap *edit* on any logged action to fix its **time** or
   label after the fact (for when you couldn't get to your phone right away).
 - **Heat chart** drawn inline (no extra cards/plugins): grill + every probe
   reading, dashed target lines, and a labelled marker at each event.
-- **Entities & services** for automations/voice: action buttons,
-  `sensor.cook_stage` / `sensor.cook_elapsed`, and services
-  `mark_event`, `edit_event`, `delete_event`, `set_grill_target`,
-  `add_probe`, `update_probe`, `remove_probe`, `reset`.
+- **Entities & services** for automations/voice: a *Reset Cook* button,
+  `sensor.cook_stage` / `sensor.cook_elapsed`, and the services below.
 
 ## Services
 
-- `chefstemp_cook.mark_event` — `event` (meat_on/wrapped/sauce/done/custom),
-  optional `label`, `color`.
-- `chefstemp_cook.reset`
-- `chefstemp_cook.set_target` — `target` (in your entities' unit).
+- `open_cook.item_event` — `probe_id`, `event` (on/wrapped/sauce/flip/done/custom), optional `label`
+- `open_cook.reset_item` — `probe_id`
+- `open_cook.note` — grill-level shared note (`label`, optional `color`)
+- `open_cook.edit_event` / `open_cook.delete_event` — `id` (works on any timeline)
+- `open_cook.set_grill_target` — `target`, optional `band`
+- `open_cook.add_probe` / `open_cook.update_probe` / `open_cook.remove_probe`
+- `open_cook.reset` — clears the whole cook
 
 ## Phone alert example
 
@@ -59,7 +68,7 @@ automation:
   - alias: Cook target -> phone
     trigger:
       - platform: event
-        event_type: chefstemp_cook_target_reached
+        event_type: open_cook_target_reached
     action:
       - service: notify.mobile_app_your_phone
         data:
