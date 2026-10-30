@@ -39,11 +39,33 @@ def _now() -> float:
     return time.time()
 
 
+class _CookStore(Store):
+    """Store with a migration so bumping STORAGE_VERSION never crashes setup.
+
+    Uses *args so it works whether HA calls the migrator with
+    (old_version, data) or (old_major, old_minor, data) — the stored dict is
+    always the last argument.
+    """
+
+    async def _async_migrate_func(self, *args):  # type: ignore[override]
+        data = dict(args[-1] or {})
+        # v2 -> v3: the single global "events" list becomes grill-level "notes",
+        # and every probe gains its own timeline + start clock.
+        if "events" in data and "notes" not in data:
+            data["notes"] = data.pop("events")
+        for p in data.get("probes", []):
+            if isinstance(p, dict):
+                p.setdefault("started_at", None)
+                p.setdefault("events", [])
+                p.setdefault("target_reached_at", None)
+        return data
+
+
 class CookManager:
     def __init__(self, hass: HomeAssistant, entry: ConfigEntry) -> None:
         self.hass = hass
         self.entry = entry
-        self._store = Store(hass, STORAGE_VERSION, f"{STORAGE_KEY}.{entry.entry_id}")
+        self._store = _CookStore(hass, STORAGE_VERSION, f"{STORAGE_KEY}.{entry.entry_id}")
         # persisted
         self.probes: list[dict[str, Any]] = []     # each is a cook item (see _new_probe)
         self.notes: list[dict[str, Any]] = []       # grill-level shared timeline
