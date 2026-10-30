@@ -97,11 +97,21 @@ def _manager_for(hass: HomeAssistant, call: ServiceCall) -> CookManager | None:
 
 
 def _async_register_services(hass: HomeAssistant) -> None:
-    async def _mark(call: ServiceCall) -> None:
+    async def _item_event(call: ServiceCall) -> None:
         mgr = _manager_for(hass, call)
         if mgr:
-            await mgr.async_mark(call.data.get("event", "custom"),
-                                 call.data.get("label"), call.data.get("color"))
+            await mgr.async_item_event(call.data["probe_id"], call.data["event"],
+                                       call.data.get("label"))
+
+    async def _note(call: ServiceCall) -> None:
+        mgr = _manager_for(hass, call)
+        if mgr:
+            await mgr.async_note(call.data.get("label", "Note"), call.data.get("color"))
+
+    async def _reset_item(call: ServiceCall) -> None:
+        mgr = _manager_for(hass, call)
+        if mgr:
+            await mgr.async_reset_item(call.data["probe_id"])
 
     async def _edit_event(call: ServiceCall) -> None:
         mgr = _manager_for(hass, call)
@@ -152,9 +162,18 @@ def _async_register_services(hass: HomeAssistant) -> None:
             await mgr.async_remove_probe(call.data["id"])
 
     reg = hass.services.async_register
-    reg(DOMAIN, "mark_event", _mark, schema=vol.Schema({
+    reg(DOMAIN, "item_event", _item_event, schema=vol.Schema({
+        vol.Required("probe_id"): cv.string, vol.Required("event"): cv.string,
+        vol.Optional("label"): cv.string, vol.Optional("entry_id"): cv.string}))
+    reg(DOMAIN, "note", _note, schema=vol.Schema({
+        vol.Optional("label", default="Note"): cv.string,
+        vol.Optional("color"): cv.string, vol.Optional("entry_id"): cv.string}))
+    reg(DOMAIN, "reset_item", _reset_item, schema=vol.Schema({
+        vol.Required("probe_id"): cv.string, vol.Optional("entry_id"): cv.string}))
+    # back-compat: old mark_event now records a grill-level note
+    reg(DOMAIN, "mark_event", _note, schema=vol.Schema({
         vol.Optional("event", default="custom"): cv.string,
-        vol.Optional("label"): cv.string, vol.Optional("color"): cv.string,
+        vol.Optional("label", default="Note"): cv.string, vol.Optional("color"): cv.string,
         vol.Optional("entry_id"): cv.string}))
     reg(DOMAIN, "edit_event", _edit_event, schema=vol.Schema({
         vol.Required("id"): cv.string, vol.Optional("timestamp"): vol.Coerce(float),

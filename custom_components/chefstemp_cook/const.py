@@ -15,17 +15,18 @@ STATIC_URL = "/chefstemp_cook_static/chefstemp-cook-panel.js"
 PANEL_ELEMENT = "chefstemp-cook-panel"
 
 STORAGE_KEY = "chefstemp_cook.state"
-STORAGE_VERSION = 2
+STORAGE_VERSION = 3
 
-# Quick timeline actions shown as buttons.
+# Per-item timeline actions shown as buttons on each probe card. "on" starts
+# (or restarts) that item's clock and clears its own timeline.
 QUICK_EVENTS = [
-    {"key": "meat_on", "label": "Meat On", "color": "#4caf50", "icon": "mdi:food-steak"},
-    {"key": "wrapped", "label": "Wrapped", "color": "#ff9800", "icon": "mdi:package-variant-closed"},
-    {"key": "sauce", "label": "Sauce", "color": "#e91e63", "icon": "mdi:bottle-tonic"},
-    {"key": "flip", "label": "Flip", "color": "#00bcd4", "icon": "mdi:flip-horizontal"},
-    {"key": "done", "label": "Done", "color": "#2196f3", "icon": "mdi:check-circle"},
+    {"key": "on", "label": "On", "icon": "mdi:play"},
+    {"key": "wrapped", "label": "Wrap", "icon": "mdi:package-variant-closed"},
+    {"key": "sauce", "label": "Sauce", "icon": "mdi:bottle-tonic"},
+    {"key": "flip", "label": "Flip", "icon": "mdi:flip-horizontal"},
+    {"key": "done", "label": "Done", "icon": "mdi:check-circle"},
 ]
-DEFAULT_CUSTOM_COLOR = "#9e9e9e"
+DEFAULT_CUSTOM_COLOR = "#9e9e9e"   # grill-level notes
 
 # Distinct colors handed to probes as they're added.
 PROBE_COLORS = [

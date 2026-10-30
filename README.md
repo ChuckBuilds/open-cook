@@ -21,9 +21,13 @@ ESPHome build, or any other thermometer.
 
 ## What you get
 
-- **Sidebar app** with live grill + per-probe temps, elapsed time, and stage.
-- **One-tap actions** — Meat On (starts a fresh cook), Wrapped, Sauce, Flip, Done
-  — plus a **note box** for custom labels like "spritzed" or "added wood".
+- **Independent per-item cooks on one grill.** Each probe is its own cook item
+  with its **own** On / Wrap / Sauce / Flip / Done timeline, start clock, and
+  elapsed — so you can run **beef and chicken at once and stagger them** (start
+  one later, foil them at different times) without their timelines colliding.
+- **Shared grill** — one grill temperature and grill target/drift alert for the
+  whole cook, plus a **shared notes** timeline for grill-level events ("added
+  wood", "opened lid").
 - **Multiple probes**, each with its own **name**, **item type** (steak, pizza,
   brisket, …), **pull target**, and **one or more reading sensors** (so a probe
   that exposes several sensors can chart them all).

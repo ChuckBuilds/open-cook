@@ -1,16 +1,29 @@
-mark_event:
-  name: Mark event
-  description: Record a cook event (shown as a marker on the heat chart).
+item_event:
+  name: Item event
+  description: Record an event on one probe's own timeline (on/wrapped/sauce/flip/done).
   fields:
-    event: { name: Event key, description: "meat_on, wrapped, sauce, flip, done, or custom.", default: custom, selector: { text: } }
-    label: { name: Label, description: Free-text label for a custom note., selector: { text: } }
-    color: { name: Color, description: Optional hex color., selector: { text: } }
+    probe_id: { name: Probe id, required: true, selector: { text: } }
+    event: { name: Event key, description: "on, wrapped, sauce, flip, done, or custom.", required: true, selector: { text: } }
+    label: { name: Label, selector: { text: } }
+
+note:
+  name: Grill note
+  description: Add a grill-level note to the shared timeline.
+  fields:
+    label: { name: Label, default: Note, selector: { text: } }
+    color: { name: Color, selector: { text: } }
+
+reset_item:
+  name: Reset item
+  description: Clear one probe's timeline and start time.
+  fields:
+    probe_id: { name: Probe id, required: true, selector: { text: } }
 
 edit_event:
   name: Edit event
-  description: Change the time or label of a logged event.
+  description: Change the time or label of any logged event (item or note).
   fields:
-    id: { name: Event id, description: The event's id (from the app)., required: true, selector: { text: } }
+    id: { name: Event id, required: true, selector: { text: } }
     timestamp: { name: Timestamp, description: New unix time (seconds)., selector: { number: { min: 0, max: 9999999999, mode: box } } }
     label: { name: Label, selector: { text: } }
     color: { name: Color, selector: { text: } }
@@ -22,7 +35,7 @@ delete_event:
 
 reset:
   name: Reset cook
-  description: Clear the current cook's events and timers.
+  description: Clear all items' timelines and grill notes.
 
 set_target:
   name: Set first probe target
@@ -31,16 +44,16 @@ set_target:
 
 set_grill_target:
   name: Set grill target
-  description: Grill hold temperature; alerts if it drifts beyond the band.
+  description: Grill hold temperature; alerts if it drifts beyond the band while cooking.
   fields:
-    target: { name: Target, description: Grill target (blank to clear)., selector: { number: { min: 0, max: 800, mode: box } } }
-    band: { name: Band, description: Allowed +/- drift before alerting., selector: { number: { min: 1, max: 200, mode: box } } }
+    target: { name: Target, selector: { number: { min: 0, max: 800, mode: box } } }
+    band: { name: Band, selector: { number: { min: 1, max: 200, mode: box } } }
 
 add_probe:
   name: Add probe
   fields:
     name: { name: Name, selector: { text: } }
-    readings: { name: Reading entities, description: One or more temperature sensors., selector: { entity: { multiple: true, domain: sensor, device_class: temperature } } }
+    readings: { name: Reading entities, selector: { entity: { multiple: true, domain: sensor, device_class: temperature } } }
     item: { name: Item preset, selector: { text: } }
     target: { name: Target, selector: { number: { min: 0, max: 600, mode: box } } }
 
