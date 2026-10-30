@@ -25,6 +25,7 @@ class ChefsTempCookPanel extends HTMLElement {
   disconnectedCallback() {
     if (this._unsub) this._unsub.then((u) => u && u());
     this._timers.forEach(clearInterval); this._timers = [];
+    if (this._onResize) window.removeEventListener("resize", this._onResize);
   }
 
   async _init() {
@@ -39,6 +40,8 @@ class ChefsTempCookPanel extends HTMLElement {
     await this._loadHistory(); this._render();
     this._timers.push(setInterval(() => this._loadHistory().then(() => this._renderChart()), 20000));
     this._timers.push(setInterval(() => this._paintLive(), 1000));
+    this._onResize = () => this._renderChart();
+    window.addEventListener("resize", this._onResize);
   }
 
   _entities() {
@@ -139,6 +142,23 @@ class ChefsTempCookPanel extends HTMLElement {
         .editbox{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:4px 0;}
         .hr{height:1px;background:var(--divider-color,#333);margin:10px 0;opacity:.6;}
         .badge{font-size:12px;padding:2px 8px;border-radius:10px;background:rgba(255,255,255,.08);}
+        /* --- phone: bigger text, fat touch targets, stacked controls --- */
+        @media (max-width:640px){
+          .wrap{padding:12px;}
+          .stat{flex:1 1 42%;padding:14px 16px;}
+          .stat .k{font-size:13px;} .stat .v{font-size:32px;}
+          h2{font-size:15px;margin-top:22px;}
+          button.act{flex:1 1 42%;padding:16px 10px;font-size:17px;border-radius:12px;}
+          .chip{font-size:15px;padding:11px 16px;}
+          .ghost{padding:13px 16px;font-size:16px;}
+          input,select{font-size:16px;padding:13px;}  /* 16px stops iOS zoom-on-focus */
+          input.grow{min-width:100%;}
+          .read,.ev{font-size:16px;padding:6px 0;}
+          .link{font-size:16px;padding:6px 4px;}       /* bigger tap target for edit/cancel */
+          .x{font-size:20px;padding:4px;}
+          .badge{font-size:14px;padding:4px 10px;}
+          label.muted{font-size:14px;}
+        }
       </style>
       <div class="wrap">
         <div id="stats" class="top"></div>
@@ -313,11 +333,17 @@ class ChefsTempCookPanel extends HTMLElement {
   _renderChart() {
     if (!this._cook) return;
     const c = this._cook; const host = this.shadowRoot.getElementById("chart");
-    const W = 960, H = 360, ml = 46, mr = 14, mt = 14, mb = 26;
+    // Responsive: on a phone use a taller, "zoomed-in" viewBox with bigger fonts
+    // so axis numbers and markers stay legible once the SVG scales to screen width.
+    const narrow = (this.clientWidth || window.innerWidth || 1000) < 640;
+    const W = narrow ? 480 : 960, H = narrow ? 440 : 360;
+    const ml = narrow ? 40 : 46, mr = 12, mt = 18, mb = narrow ? 30 : 26;
+    const fAxis = narrow ? 15 : 10, fMark = narrow ? 13 : 9;
+    const ticks = narrow ? 3 : 4, wScale = narrow ? 1.6 : 1;
     const series = [];
-    if (c.grill_entity) series.push({ id: c.grill_entity, color: "#fb8c00", width: 2, dash: false, pts: (this._history[c.grill_entity] || []).slice() });
+    if (c.grill_entity) series.push({ id: c.grill_entity, color: "#fb8c00", width: 2 * wScale, dash: false, pts: (this._history[c.grill_entity] || []).slice() });
     for (const p of c.probes || []) (p.readings || []).forEach((eid, i) =>
-      series.push({ id: eid, color: p.color, width: i === 0 ? 2.5 : 1.2, dash: i > 0, pts: (this._history[eid] || []).slice() }));
+      series.push({ id: eid, color: p.color, width: (i === 0 ? 2.5 : 1.2) * wScale, dash: i > 0, pts: (this._history[eid] || []).slice() }));
     const now = Date.now();
     for (const s of series) { const v = this._val(s.id); if (v != null) s.pts.push({ t: now, v }); }
     const all = series.flatMap((s) => s.pts);
@@ -325,11 +351,11 @@ class ChefsTempCookPanel extends HTMLElement {
     const targets = [];
     if (c.grill_target != null) targets.push({ v: c.grill_target, color: "#fb8c00" });
     (c.probes || []).forEach((p) => { if (p.target != null) targets.push({ v: p.target, color: p.color }); });
-    // event markers: per-item (probe color + "name · label") and grill notes
     const markers = [];
     for (const p of c.probes || []) for (const ev of p.events || [])
-      markers.push({ ts: ev.ts, color: p.color, label: `${p.name} · ${ev.label}` });
+      markers.push({ ts: ev.ts, color: p.color, label: narrow ? ev.label : `${p.name} · ${ev.label}` });
     for (const ev of c.notes || []) markers.push({ ts: ev.ts, color: ev.color || "#9e9e9e", label: ev.label });
+    markers.sort((a, b) => a.ts - b.ts);
 
     const starts = (c.probes || []).filter((p) => p.started_at).map((p) => p.started_at * 1000);
     const t0 = Math.min(...(starts.length ? starts : [now]), ...all.map((p) => p.t));
@@ -342,16 +368,20 @@ class ChefsTempCookPanel extends HTMLElement {
     const path = (pts) => pts.length ? "M" + pts.map((p) => `${X(p.t).toFixed(1)},${Y(p.v).toFixed(1)}`).join(" L") : "";
 
     let g = "";
-    for (let i = 0; i <= 4; i++) { const v = vmin + (i / 4) * (vmax - vmin), y = Y(v);
+    for (let i = 0; i <= ticks; i++) { const v = vmin + (i / ticks) * (vmax - vmin), y = Y(v);
       g += `<line x1="${ml}" y1="${y}" x2="${W - mr}" y2="${y}" stroke="var(--divider-color,#333)" stroke-width="0.5"/>
-        <text x="${ml - 6}" y="${y + 3}" text-anchor="end" font-size="10" fill="var(--secondary-text-color,#999)">${Math.round(v)}</text>`; }
-    for (let i = 0; i <= 4; i++) { const t = t0 + (i / 4) * (t1 - t0);
-      g += `<text x="${X(t)}" y="${H - 8}" text-anchor="middle" font-size="10" fill="var(--secondary-text-color,#999)">${fmtTime(t / 1000)}</text>`; }
+        <text x="${ml - 5}" y="${y + fAxis / 3}" text-anchor="end" font-size="${fAxis}" fill="var(--secondary-text-color,#999)">${Math.round(v)}</text>`; }
+    for (let i = 0; i <= ticks; i++) { const t = t0 + (i / ticks) * (t1 - t0);
+      g += `<text x="${X(t)}" y="${H - 8}" text-anchor="middle" font-size="${fAxis}" fill="var(--secondary-text-color,#999)">${fmtTime(t / 1000)}</text>`; }
     let tl = ""; for (const t of targets) { const y = Y(t.v);
-      tl += `<line x1="${ml}" y1="${y}" x2="${W - mr}" y2="${y}" stroke="${t.color}" stroke-width="1" stroke-dasharray="4 4" opacity="0.7"/>`; }
-    let mk = ""; for (const ev of markers) { const x = X(ev.ts * 1000); if (x < ml || x > W - mr) continue;
-      mk += `<line x1="${x}" y1="${mt}" x2="${x}" y2="${H - mb}" stroke="${ev.color}" stroke-width="1.5" stroke-dasharray="3 3"/>
-        <text x="${x + 3}" y="${mt + 10}" font-size="9" fill="${ev.color}">${esc(ev.label)}</text>`; }
+      tl += `<line x1="${ml}" y1="${y}" x2="${W - mr}" y2="${y}" stroke="${t.color}" stroke-width="${1 * wScale}" stroke-dasharray="4 4" opacity="0.7"/>`; }
+    // markers with staggered label rows so they don't overlap on a narrow chart
+    let mk = ""; let mi = 0;
+    for (const ev of markers) { const x = X(ev.ts * 1000); if (x < ml || x > W - mr) continue;
+      const ly = mt + fMark + (mi % 3) * (fMark + 2); mi++;
+      const anchor = x > W - mr - 60 ? "end" : "start"; const dx = anchor === "end" ? -3 : 3;
+      mk += `<line x1="${x}" y1="${mt}" x2="${x}" y2="${H - mb}" stroke="${ev.color}" stroke-width="${1.5 * wScale}" stroke-dasharray="3 3"/>
+        <text x="${x + dx}" y="${ly}" text-anchor="${anchor}" font-size="${fMark}" fill="${ev.color}">${esc(ev.label)}</text>`; }
     const lines = series.map((s) => `<path d="${path(s.pts)}" fill="none" stroke="${s.color}" stroke-width="${s.width}" ${s.dash ? 'stroke-dasharray="4 3"' : ""} stroke-linejoin="round"/>`).join("");
     host.innerHTML = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">${g}${tl}${mk}${lines}</svg>`;
   }
