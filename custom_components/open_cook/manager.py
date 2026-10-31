@@ -69,6 +69,7 @@ class CookManager:
         # persisted
         self.probes: list[dict[str, Any]] = []     # each is a cook item (see _new_probe)
         self.notes: list[dict[str, Any]] = []       # grill-level shared timeline
+        self._grill_entity: str | None = None       # chosen in-app, persisted
         self.grill_target: float | None = None
         self.grill_band: float = DEFAULT_GRILL_BAND
         self._grill_alert: str = "ok"
@@ -79,7 +80,13 @@ class CookManager:
 
     @property
     def grill_entity(self) -> str | None:
-        return self.entry.options.get(CONF_GRILL_ENTITY) or self.entry.data.get(CONF_GRILL_ENTITY)
+        return self._grill_entity
+
+    async def async_set_grill_entity(self, entity: str | None) -> None:
+        self._grill_entity = entity or None
+        self._grill_alert = "ok"
+        self._rewatch()
+        await self._changed()
 
     def _next_id(self) -> str:
         val = f"i{self._seq}"
@@ -96,6 +103,13 @@ class CookManager:
             self.grill_band = data.get("grill_band", DEFAULT_GRILL_BAND)
             self._grill_alert = data.get("grill_alert", "ok")
             self._seq = data.get("seq", 1)
+        # grill entity: a persisted value wins (incl. an explicit None after the
+        # user clears it in-app); otherwise seed once from the config entry.
+        if data and "grill_entity" in data:
+            self._grill_entity = data["grill_entity"]
+        else:
+            self._grill_entity = (self.entry.options.get(CONF_GRILL_ENTITY)
+                                  or self.entry.data.get(CONF_GRILL_ENTITY))
         # normalize probes to the v3 shape
         for p in self.probes:
             p.setdefault("started_at", None)
@@ -117,6 +131,7 @@ class CookManager:
         await self._store.async_save({
             "probes": self.probes,
             "notes": self.notes,
+            "grill_entity": self._grill_entity,
             "grill_target": self.grill_target,
             "grill_band": self.grill_band,
             "grill_alert": self._grill_alert,

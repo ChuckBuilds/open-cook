@@ -42,6 +42,12 @@ set_target:
   fields:
     target: { name: Target, required: true, selector: { number: { min: 0, max: 600, mode: box } } }
 
+set_grill_entity:
+  name: Set grill sensor
+  description: Choose (or clear) the grill temperature sensor without reconfiguring the integration.
+  fields:
+    entity: { name: Grill sensor, description: Leave blank to clear., selector: { entity: { domain: sensor, device_class: temperature } } }
+
 set_grill_target:
   name: Set grill target
   description: Grill hold temperature; alerts if it drifts beyond the band while cooking.

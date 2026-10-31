@@ -218,9 +218,16 @@ class OpenCookPanel extends HTMLElement {
     const c = this._cook; const unit = this._unit(c.grill_entity);
     const presets = (c.grill_presets || []).map((p) =>
       `<button class="chip" style="background:#455a64" data-gp="${p.key}">${esc(p.label)}</button>`).join(" ");
+    const entOpts = ['<option value="">— none —</option>'].concat(
+      this._tempEntities().map((e) =>
+        `<option value="${e}" ${e === c.grill_entity ? "selected" : ""}>${esc(this._st(e) ? this._st(e).attributes.friendly_name || e : e)}</option>`)).join("");
     const box = this.shadowRoot.getElementById("grillCard");
+    const hasGrill = !!c.grill_entity;
     box.innerHTML = `
-      <div class="row"><b style="font-size:22px" data-glive>${this._val(c.grill_entity) == null ? "—" : this._val(c.grill_entity)}</b>
+      <div class="row"><label class="muted">Grill sensor</label>
+        <select id="gEntity" class="grow">${entOpts}</select></div>
+      ${hasGrill ? `
+      <div class="row"><b style="font-size:22px">${this._val(c.grill_entity) == null ? "—" : this._val(c.grill_entity)}</b>
         <span class="muted">${esc(unit)}</span>
         ${c.grill_alert && c.grill_alert !== "ok" ? `<span class="badge" style="color:var(--error-color,#ff5252)">drift ${esc(c.grill_alert)}</span>` : ""}</div>
       <div class="row">
@@ -229,14 +236,18 @@ class OpenCookPanel extends HTMLElement {
         <label class="muted">± band</label>
         <input id="gBand" type="number" step="1" style="width:76px" value="${c.grill_band != null ? c.grill_band : ""}"/>
         <button class="ghost" id="gClear">Clear</button></div>
-      <div class="row">${presets}</div>`;
-    box.querySelector("#gTarget").onchange = (e) => this._setGrillTarget(e.target.value, box.querySelector("#gBand").value);
-    box.querySelector("#gBand").onchange = (e) => this._setGrillTarget(undefined, e.target.value);
-    box.querySelector("#gClear").onclick = () => this._setGrillTarget("");
-    box.querySelectorAll("[data-gp]").forEach((btn) => btn.onclick = () => {
-      const p = (c.grill_presets || []).find((x) => x.key === btn.dataset.gp);
-      this._setGrillTarget(this._isF(c.grill_entity) ? p.target_f : p.target_c);
-    });
+      <div class="row">${presets}</div>`
+      : `<div class="muted">No grill sensor selected — pick one above, or just use probes.</div>`}`;
+    box.querySelector("#gEntity").onchange = (e) => this._svc("set_grill_entity", { entity: e.target.value || null });
+    if (hasGrill) {
+      box.querySelector("#gTarget").onchange = (e) => this._setGrillTarget(e.target.value, box.querySelector("#gBand").value);
+      box.querySelector("#gBand").onchange = (e) => this._setGrillTarget(undefined, e.target.value);
+      box.querySelector("#gClear").onclick = () => this._setGrillTarget("");
+      box.querySelectorAll("[data-gp]").forEach((btn) => btn.onclick = () => {
+        const p = (c.grill_presets || []).find((x) => x.key === btn.dataset.gp);
+        this._setGrillTarget(this._isF(c.grill_entity) ? p.target_f : p.target_c);
+      });
+    }
   }
 
   _renderProbes() {

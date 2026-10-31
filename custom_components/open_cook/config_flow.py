@@ -21,10 +21,16 @@ _TEMP_SELECTOR = selector.EntitySelector(
 
 
 def _schema(defaults: dict[str, Any]) -> vol.Schema:
+    # Everything is optional: you can create the entry with nothing chosen and
+    # pick the grill sensor (and add probes) inside the app afterwards.
+    def _opt(key):
+        cur = defaults.get(key)
+        return vol.Optional(key, description={"suggested_value": cur}) if cur else vol.Optional(key)
+
     return vol.Schema(
         {
-            vol.Required(CONF_GRILL_ENTITY, default=defaults.get(CONF_GRILL_ENTITY)): _TEMP_SELECTOR,
-            vol.Optional(CONF_FOOD_ENTITY, default=defaults.get(CONF_FOOD_ENTITY)): _TEMP_SELECTOR,
+            _opt(CONF_GRILL_ENTITY): _TEMP_SELECTOR,
+            _opt(CONF_FOOD_ENTITY): _TEMP_SELECTOR,
             vol.Optional(CONF_TARGET, default=defaults.get(CONF_TARGET, 95)): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0, max=600, step=1, mode="box")
             ),

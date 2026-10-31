@@ -3,9 +3,9 @@
     "step": {
       "user": {
         "title": "Open Cook",
-        "description": "Pick the temperature sensors to chart. The grill sensor is required; the food sensor drives the pull-temp alert.",
+        "description": "All optional — you can set up with nothing and choose the grill sensor and add probes inside the app. The food sensor seeds your first probe.",
         "data": {
-          "grill_entity": "Grill / ambient temperature sensor",
+          "grill_entity": "Grill sensor (optional)",
           "food_entity": "Food probe temperature sensor",
           "target_temp": "Default pull target"
         }
@@ -17,7 +17,7 @@
       "init": {
         "title": "Open Cook",
         "data": {
-          "grill_entity": "Grill / ambient temperature sensor",
+          "grill_entity": "Grill sensor (optional)",
           "food_entity": "Food probe temperature sensor",
           "target_temp": "Default pull target"
         }

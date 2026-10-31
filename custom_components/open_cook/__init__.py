@@ -139,6 +139,11 @@ def _async_register_services(hass: HomeAssistant) -> None:
         if mgr:
             await mgr.async_set_grill_target(call.data.get("target"), call.data.get("band"))
 
+    async def _set_grill_entity(call: ServiceCall) -> None:
+        mgr = _manager_for(hass, call)
+        if mgr:
+            await mgr.async_set_grill_entity(call.data.get("entity"))
+
     async def _add_probe(call: ServiceCall) -> None:
         mgr = _manager_for(hass, call)
         if mgr:
@@ -187,6 +192,8 @@ def _async_register_services(hass: HomeAssistant) -> None:
     reg(DOMAIN, "set_grill_target", _set_grill_target, schema=vol.Schema({
         vol.Optional("target"): vol.Any(None, vol.Coerce(float)),
         vol.Optional("band"): vol.Coerce(float), vol.Optional("entry_id"): cv.string}))
+    reg(DOMAIN, "set_grill_entity", _set_grill_entity, schema=vol.Schema({
+        vol.Optional("entity"): vol.Any(None, cv.string), vol.Optional("entry_id"): cv.string}))
     reg(DOMAIN, "add_probe", _add_probe, schema=vol.Schema({
         vol.Optional("name"): cv.string,
         vol.Optional("readings", default=[]): vol.All(cv.ensure_list, [cv.string]),
